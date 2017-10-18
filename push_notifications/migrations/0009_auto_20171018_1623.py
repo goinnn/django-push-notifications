@@ -15,11 +15,11 @@ def add_application_id(apps, schema_editor):
     devices = GCMDevice.objects.filter(name__startswith='browser')
     devices.delete()
 
-    APNSDevice.objects.exclude(company='accenture').filter(name__icontains='@').update(application_id='APNS_PASSENGER')
-    APNSDevice.objects.exclude(company='accenture', name__icontains='@').update(application_id='APNS_TAXI')
-
     APNSDevice.objects.filter(company='accenture').update(application_id='APNS_ACCENTURE')
 
+    APNSDevice.objects.exclude(company='accenture').filter(name__icontains='@').update(application_id='APNS_PASSENGER')
+
+    APNSDevice.objects.exclude(company='accenture').exclude(name__icontains='@').update(application_id='APNS_TAXI')
     GCMDevice.objects.all().update(application_id='GCM')
 
     WebPushDevice.objects.all().update(application_id='BROWSER')
