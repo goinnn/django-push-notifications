@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from .apns import APNSServerError
 from .gcm import GCMError
 from .webpush import WebPushError
-from .models import APNSDevice, GCMDevice, WNSDevice, FirefoxDevice, WebPushDevice
+from .models import APNSDevice, GCMDevice, WNSDevice, WebPushDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
@@ -114,6 +114,5 @@ class GCMDeviceAdmin(DeviceAdmin):
 
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, GCMDeviceAdmin)
-admin.site.register(FirefoxDevice, DeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
 admin.site.register(WebPushDevice, DeviceAdmin)

@@ -30,8 +30,6 @@ class Device(models.Model):
 	date_created = models.DateTimeField(
 		verbose_name=_("Creation date"), auto_now_add=True, null=True
 	)
-	company = models.CharField(max_length=255, verbose_name=_("Company"),
-							   blank=True, null=True, default="")
 	application_id = models.CharField(
 		max_length=64, verbose_name=_("Application ID"),
 		help_text=_(
@@ -166,36 +164,6 @@ class APNSDevice(Device):
 			application_id=self.application_id, certfile=certfile,
 			**kwargs
 		)
-
-
-class FirefoxDeviceManager(models.Manager):
-
-	def get_queryset(self):
-		return FirefoxDeviceQuerySet(self.model)
-
-
-class FirefoxDeviceQuerySet(models.query.QuerySet):
-
-	def send_message(self, message, **kwargs):
-		for device in self:
-			device.send_message(message, **kwargs)
-
-
-class FirefoxDevice(Device):
-	registration_id = models.TextField(verbose_name=_("Registration ID"))
-	device_id = models.CharField(verbose_name=_("Device ID"), max_length=200,
-							  blank=True, null=True, db_index=True,
-							  help_text=_("Only for compatibility"),
-							  editable=False)
-
-	objects = FirefoxDeviceManager()
-
-	class Meta:
-		verbose_name = _("Firefox device")
-
-	def send_message(self, message, **kwargs):
-		from .firefox import firefox_send_message
-		return firefox_send_message(registration_id=self.registration_id)
 
 
 class WNSDeviceManager(models.Manager):

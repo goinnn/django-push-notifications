@@ -7,7 +7,7 @@ from rest_framework.serializers import ModelSerializer, Serializer, ValidationEr
 from rest_framework.viewsets import ModelViewSet
 
 from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
-from ..models import APNSDevice, GCMDevice, FirefoxDevice, WNSDevice, WebPushDevice
+from ..models import APNSDevice, GCMDevice, WNSDevice, WebPushDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -85,11 +85,6 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		if devices:
 			raise ValidationError({"registration_id": "This field must be unique."})
 		return attrs
-
-
-class FirefoxDeviceSerializer(ModelSerializer):
-	class Meta(DeviceSerializerMixin.Meta):
-		model = FirefoxDevice
 
 
 class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
@@ -196,15 +191,6 @@ class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
-	pass
-
-
-class FirefoxDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
-	queryset = FirefoxDevice.objects.all()
-	serializer_class = FirefoxDeviceSerializer
-
-
-class FirefoxDeviceAuthorizedViewSet(AuthorizedMixin, FirefoxDeviceViewSet):
 	pass
 
 
