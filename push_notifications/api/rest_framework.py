@@ -7,7 +7,7 @@ from rest_framework.serializers import ModelSerializer, Serializer, ValidationEr
 from rest_framework.viewsets import ModelViewSet
 
 from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
-from ..models import APNSDevice, GCMDevice, FirefoxDevice, WNSDevice
+from ..models import APNSDevice, GCMDevice, FirefoxDevice, WNSDevice, WebPushDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -120,6 +120,14 @@ class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		model = WNSDevice
 
 
+class WebPushDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = WebPushDevice
+		fields = (
+			"id", "name", "registration_id", "active", "date_created",
+			"p256dh", "auth", "browser", "application_id",
+		)
+
 # Permissions
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -206,4 +214,13 @@ class WNSDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class WNSDeviceAuthorizedViewSet(AuthorizedMixin, WNSDeviceViewSet):
+	pass
+
+
+class WebPushDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = WebPushDevice.objects.all()
+	serializer_class = WebPushDeviceSerializer
+
+
+class WebPushDeviceAuthorizedViewSet(AuthorizedMixin, WebPushDeviceViewSet):
 	pass
