@@ -1,9 +1,10 @@
 from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.translation import ugettext_lazy as _
+from .apns import APNSServerError
 from .gcm import GCMError
 
-from .models import APNSDevice, GCMDevice, FirefoxDevice, WNSDevice, get_expired_tokens
+from .models import APNSDevice, GCMDevice, WNSDevice, FirefoxDevice
 
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
@@ -13,7 +14,7 @@ User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__str__", "device_id", "user", "active", "date_created")
 	list_filter = ("active",)
-	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
+	actions = ("send_message", "send_bulk_message", "enable", "disable")
 	raw_id_fields = ("user",)
 
 	if hasattr(User, "USERNAME_FIELD"):
@@ -39,18 +40,43 @@ class DeviceAdmin(admin.ModelAdmin):
 					ret.append(r)
 			except GCMError as e:
 				errors.append(str(e))
+			except APNSServerError as e:
+				errors.append(e.status)
 
 			if bulk:
 				break
 
+		# Because NotRegistered and InvalidRegistration do not throw GCMError
+		# catch them here to display error msg.
+		if not bulk:
+			for r in ret:
+				if "error" in r["results"][0]:
+					errors.append(r["results"][0]["error"])
+		else:
+			try:
+				errors = [r["error"] for r in ret[0][0]["results"] if "error" in r]
+			except TypeError:
+				for entry in ret[0][0]:
+					errors = errors + [r["error"] for r in entry["results"] if "error" in r]
 		if errors:
 			self.message_user(
 				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
 				level=messages.ERROR
 			)
 		if ret:
-			if not bulk:
-				ret = ", ".join(ret)
+			if bulk:
+				# When the queryset exceeds the max_recipients value, the
+				# send_message method returns a list of dicts, one per chunk
+				try:
+					success = ret[0][0]["success"]
+				except TypeError:
+					success = 0
+					for entry in ret[0][0]:
+						success = success + entry["success"]
+				if success == 0:
+					return
+			elif len(errors) == len(ret):
+				return
 			if errors:
 				msg = _("Some messages were sent: %s" % (ret))
 			else:
@@ -77,21 +103,15 @@ class DeviceAdmin(admin.ModelAdmin):
 
 	disable.short_description = _("Disable selected devices")
 
-	def prune_devices(self, request, queryset):
-		# Note that when get_expired_tokens() is called, Apple's
-		# feedback service resets, so, calling it again won't return
-		# the device again (unless a message is sent to it again).  So,
-		# if the user doesn't select all the devices for pruning, we
-		# could very easily leave an expired device as active.  Maybe
-		#  this is just a bad API.
-		expired = get_expired_tokens()
-		devices = queryset.filter(registration_id__in=expired)
-		for d in devices:
-			d.active = False
-			d.save()
+
+class GCMDeviceAdmin(DeviceAdmin):
+	list_display = (
+		"__str__", "device_id", "user", "active", "date_created", "cloud_message_type"
+	)
+	list_filter = ("active", "cloud_message_type")
 
 
 admin.site.register(APNSDevice, DeviceAdmin)
-admin.site.register(GCMDevice, DeviceAdmin)
+admin.site.register(GCMDevice, GCMDeviceAdmin)
 admin.site.register(FirefoxDevice, DeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
