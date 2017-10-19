@@ -3,8 +3,6 @@ from django.conf import settings
 
 PUSH_NOTIFICATIONS_SETTINGS = getattr(settings, "PUSH_NOTIFICATIONS_SETTINGS", {})
 
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("DEBUG", settings.DEBUG)
-
 PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 	"CONFIG", "push_notifications.conf.LegacyConfig"
 )
@@ -22,10 +20,6 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 )
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("FCM_MAX_RECIPIENTS", 1000)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("FCM_ERROR_TIMEOUT", None)
-
-# Firefox
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("FIREFOX_POST_URL", "https://updates.push.services.mozilla.com/wpush/")
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("FIREFOX_HEADERS", {"TTL": "60"})
 
 # APNS
 if settings.DEBUG:
