@@ -1,5 +1,5 @@
-v1.6.0 (2017-10-19)
-===================
+v1.6.0 - v1.6.5 (2017-10-19)
+============================
 * Support WebPush
 * From django-push-notifications (v1.5.0):
     * BACKWARDS-INCOMPATIBLE: Remove `push_notifications.api.tastypie` module. Only DRF is supported now.
