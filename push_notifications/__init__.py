@@ -1,6 +1,6 @@
 import pkg_resources
 
-__version__ = pkg_resources.require("django-push-notifications-goinnn")[0].version
+__version__ = '1.6.7'
 
 class NotificationError(Exception):
 	pass

@@ -1,3 +1,7 @@
+v1.6.7 (2017-10-30)
+============================
+* Fix error with requests package version
+
 v1.6.6 (2017-10-26)
 ============================
 * Improve support WebPush
